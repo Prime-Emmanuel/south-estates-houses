@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';  // ← use our configured api, not axios directly
 
 const AdminAuthContext = createContext();
 
@@ -13,7 +13,7 @@ export function AdminAuthProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      const res = await axios.post('/api/auth/login', { username, password });
+      const res = await api.post('/auth/login', { username, password });  // ← api already has /api base
       if (res.data.success) {
         localStorage.setItem('admin_token', res.data.token);
         setIsAdmin(true);

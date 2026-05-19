@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import api from '../services/api';
+import ScanModal from '../components/ScanModal';
 
 const COMMISSION_OPTIONS = [2.5, 3, 4, 5];
 const CAMEROON_REGIONS = [
@@ -15,7 +16,7 @@ const DURATION_OPTIONS = [
   { id: 'month1', label: '1 mois', price: 20000 },
 ];
 
-export default function CreateListing({ embedded = false, onSuccess, offlineMode = false, onSaveDraft }) {
+export default function CreateListing({ embedded = false, onSuccess, offlineMode = false, onSaveDraft, showScan = false }) {
   const [formData, setFormData] = useState({
     title: '',
     offerType: 'Villa',
@@ -43,6 +44,7 @@ export default function CreateListing({ embedded = false, onSuccess, offlineMode
   const [message, setMessage] = useState({ type: '', text: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const descRef = useRef(null);
+  const [scanModalOpen, setScanModalOpen] = useState(false);
 
   const pricePerM2Num = parseFloat(formData.pricePerM2) || 0;
   const surfaceNum = parseFloat(formData.surface) || 0;
@@ -180,6 +182,35 @@ export default function CreateListing({ embedded = false, onSuccess, offlineMode
     setImagePreviews([]);
   };
 
+  // Bulk create from scanned data
+  const handleBulkCreate = async (scannedItems) => {
+    if (!onSuccess) return;
+    for (const item of scannedItems) {
+      try {
+        const form = new FormData();
+        form.append('title', item.title);
+        form.append('offerType', item.offerType);
+        form.append('pricePerM2', item.pricePerM2.toString());
+        form.append('surface', item.surface.toString());
+        form.append('commission', (item.commission || 2.5).toString());
+        form.append('region', item.region || 'Centre');
+        form.append('city', item.city || 'Yaoundé');
+        form.append('district', item.district || '');
+        form.append('description', item.description || '');
+        form.append('featured', item.featured ? 'true' : 'false');
+        form.append('titreFoncier', item.features?.titreFoncier ? 'true' : 'false');
+        form.append('viabilise', item.features?.viabilise ? 'true' : 'false');
+        form.append('cloture', item.features?.cloture ? 'true' : 'false');
+        form.append('accesFacile', item.features?.accesFacile ? 'true' : 'false');
+        form.append('eauElectricite', item.features?.eauElectricite ? 'true' : 'false');
+        await api.post('/properties', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } catch (err) {
+        console.error('Bulk create failed for', item.title, err);
+      }
+    }
+    onSuccess();
+  };
+
   const inputClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none";
   const selectClass = "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none";
 
@@ -196,6 +227,20 @@ export default function CreateListing({ embedded = false, onSuccess, offlineMode
         <div className={`mb-6 p-4 rounded-xl ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
           {message.text}
         </div>
+      )}
+
+      {/* Scan button (only in admin when online) */}
+      {showScan && !offlineMode && (
+        <button
+          type="button"
+          onClick={() => setScanModalOpen(true)}
+          className="mb-6 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Scanner & créer des annonces
+        </button>
       )}
 
       <form onSubmit={handleSubmit} noValidate>
@@ -372,14 +417,18 @@ export default function CreateListing({ embedded = false, onSuccess, offlineMode
           <button
             type="submit"
             disabled={submitting}
-            className={`bg-emerald-700 hover:bg-emerald-800 text-white px-8 py-3 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg cursor-pointer ${
-              offlineMode ? 'bg-gray-600 hover:bg-gray-700' : ''
-            }`}
+            className={`bg-emerald-700 hover:bg-emerald-800 text-white px-8 py-3 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg cursor-pointer ${offlineMode ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
           >
             {offlineMode ? 'Sauvegarder en brouillon' : submitting ? 'Soumission...' : "Publier l'annonce"}
           </button>
         </div>
       </form>
+
+      <ScanModal
+        isOpen={scanModalOpen}
+        onClose={() => setScanModalOpen(false)}
+        onCreateAll={handleBulkCreate}
+      />
     </div>
   );
 }

@@ -551,7 +551,7 @@ export default function AdminDashboard() {
     setError(null);
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
       const res = await api.get('/properties/admin', { signal: controller.signal });
       clearTimeout(timeoutId);
       setProperties(res.data.data || []);

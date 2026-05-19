@@ -547,28 +547,23 @@ export default function AdminDashboard() {
 
   // ====== ENHANCED FETCH WITH TIMEOUT ======
   const fetchProperties = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-      const res = await api.get('/properties/admin', { signal: controller.signal });
-      clearTimeout(timeoutId);
-      setProperties(res.data.data || []);
-    } catch (err) {
-      console.error('Fetch error:', err);
-      if (err.response?.status === 401) {
-        logout();
-        navigate('/');
-      } else if (err.code === 'ERR_CANCELED') {
-        setError('Le serveur met trop de temps à répondre. Veuillez réessayer.');
-      } else {
-        setError('Impossible de charger les annonces. Vérifiez que le serveur est lancé.');
-      }
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await api.get('/properties/admin');
+    setProperties(res.data.data || []);
+  } catch (err) {
+    console.error('Fetch error:', err);
+    if (err.response?.status === 401) {
+      logout();
+      navigate('/');
+    } else {
+      setError('Impossible de charger les annonces.');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (isAdmin) fetchProperties();

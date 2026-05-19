@@ -624,7 +624,13 @@ export default function AdminDashboard() {
   const renderContent = () => {
     if (activeTab === 'create') return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-        <CreateListing embedded onSuccess={handleCreateSuccess} offlineMode={!isOnline} onSaveDraft={!isOnline ? saveDraft : undefined} />
+       <CreateListing
+  embedded
+  showScan={true}
+  onSuccess={handleCreateSuccess}
+  offlineMode={!isOnline}
+  onSaveDraft={!isOnline ? saveDraft : undefined}
+/>
       </div>
     );
     if (activeTab === 'drafts') return (

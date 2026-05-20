@@ -26,7 +26,7 @@ app.use((err, req, res, next) => {
   return res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
-// Export the Express app for serverless
+// Export the Express app for Netlify Functions
 export default app;
 
 // Run the server directly only in local development

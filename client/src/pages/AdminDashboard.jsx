@@ -29,7 +29,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 
-// ---------- SIDEBAR (unchanged) ----------
+// ---------- SIDEBAR ----------
 function Sidebar({ activeTab, setActiveTab, stats, handleLogout }) {
   const navItems = [
     { id: 'dashboard', label: 'Tableau de bord', icon: FiGrid },
@@ -78,7 +78,7 @@ function Sidebar({ activeTab, setActiveTab, stats, handleLogout }) {
   );
 }
 
-// ---------- MOBILE SIDEBAR (unchanged) ----------
+// ---------- MOBILE SIDEBAR ----------
 function MobileSidebar({ activeTab, setActiveTab, stats, handleLogout, isOpen, onClose }) {
   if (!isOpen) return null;
   const navItems = [
@@ -122,7 +122,7 @@ function MobileSidebar({ activeTab, setActiveTab, stats, handleLogout, isOpen, o
   );
 }
 
-// ---------- STAT CARD (unchanged) ----------
+// ---------- STAT CARD ----------
 function StatCard({ icon: Icon, label, value, trend, color }) {
   const colorMap = {
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-800',
@@ -154,7 +154,7 @@ function StatCard({ icon: Icon, label, value, trend, color }) {
   );
 }
 
-// ---------- STATUS BADGE (unchanged) ----------
+// ---------- STATUS BADGE ----------
 function StatusBadge({ status }) {
   const styles = {
     pending: 'bg-amber-100 text-amber-800 border-amber-200',
@@ -169,7 +169,7 @@ function StatusBadge({ status }) {
   );
 }
 
-// ---------- PROPERTY DETAIL MODAL (unchanged) ----------
+// ---------- PROPERTY DETAIL MODAL ----------
 function PropertyDetailModal({ property, onClose }) {
   if (!property) return null;
   return (
@@ -240,7 +240,7 @@ function DetailItem({ label, value, className = '' }) {
   );
 }
 
-// ---------- CONFIRM MODAL (unchanged) ----------
+// ---------- CONFIRM MODAL ----------
 function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel, confirmColor }) {
   if (!isOpen) return null;
   return (
@@ -259,7 +259,7 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel
   );
 }
 
-// ---------- EDIT PROPERTY MODAL (unchanged, as previous full version) ----------
+// ---------- EDIT PROPERTY MODAL ----------
 function EditPropertyModal({ property, onClose, onSave }) {
   const [form, setForm] = useState({
     title: property?.title || '',
@@ -545,29 +545,19 @@ export default function AdminDashboard() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
 
-  // ====== ENHANCED FETCH WITH TIMEOUT ======
   const fetchProperties = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const res = await api.get('/properties/admin');
-    setProperties(res.data.data || []);
-  } catch (err) {
-    console.error('Fetch error:', err);
-    if (err.response?.status === 401) {
-      logout();
-      navigate('/');
-    } else {
-      setError('Impossible de charger les annonces.');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-  useEffect(() => {
-    if (isAdmin) fetchProperties();
-  }, [isAdmin]);
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get('/properties/admin');
+      setProperties(res.data.data || []);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      if (err.response?.status === 401) { logout(); navigate('/'); }
+      else setError('Impossible de charger les annonces.');
+    } finally { setLoading(false); }
+  };
+  useEffect(() => { if (isAdmin) fetchProperties(); }, [isAdmin]);
 
   const handleLogin = async (e) => { e.preventDefault(); setLoginError(''); setLoggingIn(true); const success = await login(username, password); setLoggingIn(false); if (!success) setLoginError('Identifiants incorrects'); };
   const handleLogout = () => { logout(); navigate('/'); };
@@ -624,13 +614,12 @@ export default function AdminDashboard() {
   const renderContent = () => {
     if (activeTab === 'create') return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-       <CreateListing
-  embedded
-  showScan={true}
-  onSuccess={handleCreateSuccess}
-  offlineMode={!isOnline}
-  onSaveDraft={!isOnline ? saveDraft : undefined}
-/>
+        <CreateListing
+          embedded
+          onSuccess={handleCreateSuccess}
+          offlineMode={!isOnline}
+          onSaveDraft={!isOnline ? saveDraft : undefined}
+        />
       </div>
     );
     if (activeTab === 'drafts') return (

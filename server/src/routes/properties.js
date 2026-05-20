@@ -17,7 +17,6 @@ const createValidation = [
   body('city').notEmpty().withMessage('City is required'),
   handleValidation,
 ];
-
 router.post('/', upload.array('images', 7), createValidation, controller.create);
 router.get('/', controller.getApproved);
 router.get('/admin', authenticateAdmin, controller.getAll);

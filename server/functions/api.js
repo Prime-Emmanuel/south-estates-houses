@@ -1,8 +1,13 @@
-import serverless from 'serverless-http';
+import serverlessExpress from '@vendia/serverless-express';
 import app from '../src/index.js';
 
-// Force Express by passing a custom binary handler
-export const handler = async (event, context) => {
-  const handler = serverless(app);
-  return handler(event, context);
-};
+let serverlessExpressInstance;
+
+function handler(event, context) {
+  if (!serverlessExpressInstance) {
+    serverlessExpressInstance = serverlessExpress({ app });
+  }
+  return serverlessExpressInstance(event, context);
+}
+
+export { handler };

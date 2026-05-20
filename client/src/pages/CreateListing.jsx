@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import api from '../services/api';
-import ScanModal from '../components/ScanModal';
+
 
 const COMMISSION_OPTIONS = [2.5, 3, 4, 5];
 const CAMEROON_REGIONS = [
@@ -44,7 +44,7 @@ export default function CreateListing({ embedded = false, onSuccess, offlineMode
   const [message, setMessage] = useState({ type: '', text: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const descRef = useRef(null);
-  const [scanModalOpen, setScanModalOpen] = useState(false);
+  
 
   const pricePerM2Num = parseFloat(formData.pricePerM2) || 0;
   const surfaceNum = parseFloat(formData.surface) || 0;

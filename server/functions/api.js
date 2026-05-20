@@ -1,7 +1,8 @@
 import serverless from 'serverless-http';
 import app from '../src/index.js';
 
-export const handler = serverless(app, {
-  framework: 'express',   // force Express
-  provider: 'aws'         // Netlify uses AWS‑style events
-});
+// Force Express by passing a custom binary handler
+export const handler = async (event, context) => {
+  const handler = serverless(app);
+  return handler(event, context);
+};
